@@ -42,11 +42,14 @@ class Daemon:
             logger.error('fork #2 failed : ' + str(err))
             sys.exit(1)
         # redirect standard file descriptors
-        sys.stdin.flush()
+        os.setsid()
+        if sys.stdin.isatty():
+            sys.stdin.flush()
         sys.stdout.flush()
         sys.stderr.flush()
         dev_null = os.open(os.devnull, os.O_RDWR)
-        os.dup2(dev_null, sys.stdin.fileno())
+        if sys.stdin.isatty():
+            os.dup2(dev_null, sys.stdin.fileno())
         os.dup2(dev_null, sys.stdout.fileno())
         os.dup2(dev_null, sys.stderr.fileno())
         # write pidfile
@@ -88,14 +91,13 @@ class Daemon:
                 time.sleep(0.1)
         except OSError as err:
             e = str(err.args)
-            if e.find('No such process') > 0:
-                if os.path.exists(self.pidfile):
-                    os.remove(self.pidfile)
-                else:
-                    logger.warning('Can not find the pidfile : "' + str(self.pidfile) + '" while a Daemon process runs')
-            else:
-                logger.error(str(err.args))
+            if e.find('No such process') < 1:
+                logger.error(e)
                 sys.exit(1)
+            if os.path.exists(self.pidfile):
+                os.remove(self.pidfile)
+            else:
+                logger.warning('Can not find the pidfile : "' + str(self.pidfile) + '" while a Daemon process runs')
 
     def restart(self):
         """Restart the daemon."""

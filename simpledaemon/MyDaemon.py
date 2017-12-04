@@ -16,6 +16,11 @@ def do_something():
 
 
 class MyDaemon(Daemon):
+    """An AbstractDaemon instance I named `MyDaemon`
+
+    run method is now implemented and call `do_something()`,
+    it's also called when the daemon is given `run-once` as parameter.
+    """
 
     def run(self):
         while True:
@@ -28,7 +33,7 @@ def usage_help():
 
 
 if __name__ == '__main__':
-    daemon = MyDaemon('/tmp/MyDaemon.pid')
+    daemon = MyDaemon('MyDaemon.pid')
     if len(sys.argv) >= 2:
         if 'start' == sys.argv[1]:
             print('Starting MyDaemon')
